@@ -1,11 +1,11 @@
 <?php
 
-	namespace Gisleburt\Templates;
+	namespace Gisleburt\Template;
 
 	/**
 	 * An interface to smooth out differences between various template engines
 	 */
-	interface TemplateEngine
+	interface Template
 	{
 
 		/**

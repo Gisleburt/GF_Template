@@ -1,30 +1,18 @@
 <?php
 
-	namespace Gisleburt\Templates;
+	namespace Gisleburt\Template;
 
 	/**
 	 * Smarty Template Engine wrapper
 	 */
-	class Twig implements TemplateEngine
+	class Php implements Template
 	{
 
 		/**
 		 * What to stick on the end of the template name
 		 * @var string
 		 */
-		protected $defaultSuffix = 'html';
-
-		/**
-		 * Twig Environment object
-		 * @var \Twig_Environment
-		 */
-		protected $twig;
-
-		/**
-		 * Twig Loader
-		 * @var Twig_Loader_Filesystem
-		 */
-		protected $loader;
+		protected $defaultSuffix = 'php';
 
 		/**
 		 * The template to use unless otherwise stated
@@ -33,17 +21,16 @@
 		protected $template;
 
 		/**
-		 * Variables that will be passed to the displayed template
+		 * Variables to be assigned to the template
 		 * @var array
 		 */
-		protected $templateVariables = array();
+		protected $templateVars = array();
 
 		/**
 		 * Configuration
 		 * @var array
 		 */
 		protected $config;
-
 
 		public function __construct(array $config = array()) {
 			if($config)
@@ -55,14 +42,7 @@
 		 * @param $config array
 		 */
 		public function initialise(array $config) {
-			require_once $config['twigDir'].'/Autoloader.php';
-			\Twig_Autoloader::register();
-
-			$loader = new \Twig_Loader_Filesystem($config['templateDirs']);
-			$this->twig = new \Twig_Environment($loader, array(
-				'cache' => $config['compileDir'],
-				'debug' => $config['devmode'],
-			));
+			$this->config = $config;
 			return $this;
 		}
 
@@ -72,7 +52,15 @@
 		 * @param $value mixed The value of the variable to assign
 		 */
 		public function assign($name, $value = null) {
-			$this->templateVariables[$name] = $value;
+			$this->templateVars[$name] = $value;
+		}
+
+		/**
+		 * Set the template that will be used
+		 * @param $name string Name of the template file
+		 */
+		public function setTemplate($template) {
+			$this->template = $template;
 			return $this;
 		}
 
@@ -83,7 +71,8 @@
 		public function display($template) {
 			if(!strpos($template, '.'))
 				$template = "$template.$this->defaultSuffix";
-			echo $this->twig->render($template, $this->templateVariables);
+			extract($this->templateVars);
+			require $this->getTemplate($template);
 			return $this;
 		}
 
@@ -95,8 +84,21 @@
 		public function fetch($template) {
 			if(!strpos($template, '.'))
 				$template = "$template.$this->defaultSuffix";
-			return $this->twig->render($template, $this->templateVariables);
+			extract($this->templateVars);
+			return $this->smarty->fetch($template);
 		}
+
+		protected function getTemplate($template) {
+			$failedDirs = array();
+			foreach($this->config['templateDirs'] as $dir) {
+				if(is_readable("$dir/$template"))
+					return "$dir/$template";
+				$failedDirs[] = $dir;
+			}
+			throw new \Exception("Template '$template' not found in: ".implode(', ', $failedDirs));
+			return $this;
+		}
+
 
 
 	}

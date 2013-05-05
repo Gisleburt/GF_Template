@@ -1,30 +1,30 @@
 <?php
 
-	namespace Gisleburt\Templates;
+	namespace Gisleburt\Template;
 
 	/**
 	 * Smarty Template Engine wrapper
 	 */
-	class Php implements TemplateEngine
+	class Smarty implements Template
 	{
 
 		/**
 		 * What to stick on the end of the template name
 		 * @var string
 		 */
-		protected $defaultSuffix = 'php';
+		protected $defaultSuffix = 'tpl';
+
+		/**
+		 * Smarty object
+		 * @var \Smarty
+		 */
+		protected $smarty;
 
 		/**
 		 * The template to use unless otherwise stated
 		 * @var string
 		 */
 		protected $template;
-
-		/**
-		 * Variables to be assigned to the template
-		 * @var array
-		 */
-		protected $templateVars = array();
 
 		/**
 		 * Configuration
@@ -42,8 +42,41 @@
 		 * @param $config array
 		 */
 		public function initialise(array $config) {
+
+			require_once "{$config['includeDir']}/Smarty.class.php";
+
+			$this->smarty = new \Smarty();
+
+			if(array_key_exists('configDir', $config))
+				$config['configDirs'][] = $config['configDir'];
+
+			if(array_key_exists('pluginDir', $config))
+				$config['pluginDirs'][] = $config['pluginDir'];
+
+			if(array_key_exists('templateDir', $config))
+				$config['templateDirs'][] = $config['templateDir'];
+
+			foreach($config['configDirs'] as $dir)
+				$this->smarty->addConfigDir($dir);
+
+			foreach($config['pluginsDirs'] as $dir)
+				$this->smarty->addPluginsDir($dir);
+
+			foreach($config['templateDirs'] as $dir)
+				$this->smarty->addTemplateDir($dir);
+
+			$this->smarty->setCacheDir($config['cacheDir']);
+
+			$this->smarty->setCompileDir($config['compileDir']);
+
+			$this->smarty->error_reporting = E_ERROR;
+
+			$this->smarty->muteExpectedErrors();
+
 			$this->config = $config;
+
 			return $this;
+
 		}
 
 		/**
@@ -52,15 +85,7 @@
 		 * @param $value mixed The value of the variable to assign
 		 */
 		public function assign($name, $value = null) {
-			$this->templateVars[$name] = $value;
-		}
-
-		/**
-		 * Set the template that will be used
-		 * @param $name string Name of the template file
-		 */
-		public function setTemplate($template) {
-			$this->template = $template;
+			$this->smarty->assign($name, $value);
 			return $this;
 		}
 
@@ -71,8 +96,7 @@
 		public function display($template) {
 			if(!strpos($template, '.'))
 				$template = "$template.$this->defaultSuffix";
-			extract($this->templateVars);
-			require $this->getTemplate($template);
+			$this->smarty->display($template);
 			return $this;
 		}
 
@@ -84,21 +108,7 @@
 		public function fetch($template) {
 			if(!strpos($template, '.'))
 				$template = "$template.$this->defaultSuffix";
-			extract($this->templateVars);
 			return $this->smarty->fetch($template);
 		}
-
-		protected function getTemplate($template) {
-			$failedDirs = array();
-			foreach($this->config['templateDirs'] as $dir) {
-				if(is_readable("$dir/$template"))
-					return "$dir/$template";
-				$failedDirs[] = $dir;
-			}
-			throw new \Exception("Template '$template' not found in: ".implode(', ', $failedDirs));
-			return $this;
-		}
-
-
 
 	}

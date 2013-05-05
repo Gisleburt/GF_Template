@@ -1,24 +1,30 @@
 <?php
 
-	namespace Gisleburt\Templates;
+	namespace Gisleburt\Template;
 
 	/**
 	 * Smarty Template Engine wrapper
 	 */
-	class Smarty implements TemplateEngine
+	class Twig implements Template
 	{
 
 		/**
 		 * What to stick on the end of the template name
 		 * @var string
 		 */
-		protected $defaultSuffix = 'tpl';
+		protected $defaultSuffix = 'html';
 
 		/**
-		 * Smarty object
-		 * @var \Smarty
+		 * Twig Environment object
+		 * @var \Twig_Environment
 		 */
-		protected $smarty;
+		protected $twig;
+
+		/**
+		 * Twig Loader
+		 * @var Twig_Loader_Filesystem
+		 */
+		protected $loader;
 
 		/**
 		 * The template to use unless otherwise stated
@@ -27,10 +33,17 @@
 		protected $template;
 
 		/**
+		 * Variables that will be passed to the displayed template
+		 * @var array
+		 */
+		protected $templateVariables = array();
+
+		/**
 		 * Configuration
 		 * @var array
 		 */
 		protected $config;
+
 
 		public function __construct(array $config = array()) {
 			if($config)
@@ -42,41 +55,15 @@
 		 * @param $config array
 		 */
 		public function initialise(array $config) {
+			require_once $config['twigDir'].'/Autoloader.php';
+			\Twig_Autoloader::register();
 
-			require_once "{$config['includeDir']}/Smarty.class.php";
-
-			$this->smarty = new \Smarty();
-
-			if(array_key_exists('configDir', $config))
-				$config['configDirs'][] = $config['configDir'];
-
-			if(array_key_exists('pluginDir', $config))
-				$config['pluginDirs'][] = $config['pluginDir'];
-
-			if(array_key_exists('templateDir', $config))
-				$config['templateDirs'][] = $config['templateDir'];
-
-			foreach($config['configDirs'] as $dir)
-				$this->smarty->addConfigDir($dir);
-
-			foreach($config['pluginsDirs'] as $dir)
-				$this->smarty->addPluginsDir($dir);
-
-			foreach($config['templateDirs'] as $dir)
-				$this->smarty->addTemplateDir($dir);
-
-			$this->smarty->setCacheDir($config['cacheDir']);
-
-			$this->smarty->setCompileDir($config['compileDir']);
-
-			$this->smarty->error_reporting = E_ERROR;
-
-			$this->smarty->muteExpectedErrors();
-
-			$this->config = $config;
-
+			$loader = new \Twig_Loader_Filesystem($config['templateDirs']);
+			$this->twig = new \Twig_Environment($loader, array(
+				'cache' => $config['compileDir'],
+				'debug' => $config['devmode'],
+			));
 			return $this;
-
 		}
 
 		/**
@@ -85,7 +72,7 @@
 		 * @param $value mixed The value of the variable to assign
 		 */
 		public function assign($name, $value = null) {
-			$this->smarty->assign($name, $value);
+			$this->templateVariables[$name] = $value;
 			return $this;
 		}
 
@@ -96,7 +83,7 @@
 		public function display($template) {
 			if(!strpos($template, '.'))
 				$template = "$template.$this->defaultSuffix";
-			$this->smarty->display($template);
+			echo $this->twig->render($template, $this->templateVariables);
 			return $this;
 		}
 
@@ -108,7 +95,8 @@
 		public function fetch($template) {
 			if(!strpos($template, '.'))
 				$template = "$template.$this->defaultSuffix";
-			return $this->smarty->fetch($template);
+			return $this->twig->render($template, $this->templateVariables);
 		}
+
 
 	}
