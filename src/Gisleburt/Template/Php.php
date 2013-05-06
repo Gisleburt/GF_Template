@@ -39,7 +39,8 @@
 
 		/**
 		 * Any initialisation should be done here
-		 * @param $config array
+		 * @param array $config
+		 * @return $this
 		 */
 		public function initialise(array $config) {
 			$this->config = $config;
@@ -57,7 +58,8 @@
 
 		/**
 		 * Set the template that will be used
-		 * @param $name string Name of the template file
+		 * @param $template string Name of the template file
+		 * @return $this
 		 */
 		public function setTemplate($template) {
 			$this->template = $template;
@@ -66,7 +68,8 @@
 
 		/**
 		 * Display the chosen template.
-		 * @param $template string (optional) Override previously set template for this action only
+		 * @param string $template (optional) Override previously set template for this action only
+		 * @return $this
 		 */
 		public function display($template) {
 			if(!strpos($template, '.'))
@@ -88,6 +91,12 @@
 			return $this->smarty->fetch($template);
 		}
 
+		/**
+		 * Gets the template
+		 * @param $template
+		 * @return string
+		 * @throws \Exception
+		 */
 		protected function getTemplate($template) {
 			$failedDirs = array();
 			foreach($this->config['templateDirs'] as $dir) {
@@ -96,7 +105,6 @@
 				$failedDirs[] = $dir;
 			}
 			throw new \Exception("Template '$template' not found in: ".implode(', ', $failedDirs));
-			return $this;
 		}
 
 

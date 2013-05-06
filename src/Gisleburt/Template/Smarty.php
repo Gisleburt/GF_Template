@@ -39,7 +39,8 @@
 
 		/**
 		 * Any initialisation should be done here
-		 * @param $config array
+		 * @param array $config
+		 * @return $this
 		 */
 		public function initialise(array $config) {
 
@@ -83,6 +84,7 @@
 		 * Assign a variable to the template with a given value
 		 * @param $name string|array The name of the variable to assign
 		 * @param $value mixed The value of the variable to assign
+		 * @return $this
 		 */
 		public function assign($name, $value = null) {
 			$this->smarty->assign($name, $value);
@@ -91,7 +93,8 @@
 
 		/**
 		 * Display the chosen template.
-		 * @param $template string (optional) Override previously set template for this action only
+		 * @param string $template (optional) Override previously set template for this action only
+		 * @return $this
 		 */
 		public function display($template) {
 			if(!strpos($template, '.'))

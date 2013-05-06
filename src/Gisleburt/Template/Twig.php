@@ -52,7 +52,8 @@
 
 		/**
 		 * Any initialisation should be done here
-		 * @param $config array
+		 * @param array $config
+		 * @return $this
 		 */
 		public function initialise(array $config) {
 			require_once $config['twigDir'].'/Autoloader.php';
@@ -61,7 +62,7 @@
 			$loader = new \Twig_Loader_Filesystem($config['templateDirs']);
 			$this->twig = new \Twig_Environment($loader, array(
 				'cache' => $config['compileDir'],
-				'debug' => $config['devmode'],
+				'debug' => $config['devMode'],
 			));
 			return $this;
 		}
@@ -70,6 +71,7 @@
 		 * Assign a variable to the template with a given value
 		 * @param $name string|array The name of the variable to assign
 		 * @param $value mixed The value of the variable to assign
+		 * @return $this
 		 */
 		public function assign($name, $value = null) {
 			$this->templateVariables[$name] = $value;
@@ -78,7 +80,8 @@
 
 		/**
 		 * Display the chosen template.
-		 * @param $template string (optional) Override previously set template for this action only
+		 * @param string $template (optional) Override previously set template for this action only
+		 * @return $this
 		 */
 		public function display($template) {
 			if(!strpos($template, '.'))
