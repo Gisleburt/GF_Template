@@ -1,9 +1,9 @@
 {
-    "name": "gisleburt/templates",
+    "name": "gisleburt/template",
     "type": "library",
-    "description": "Wrappers for template engines allowing you to keep code consistent and easily swap between, or mix engines.",
+    "description": "Gisleburt Framework: Template module",
     "keywords": ["mvc","templates","wrapper"],
-    "homepage": "http://github.com/gisleburt/templates",
+    "homepage": "http://github.com/Gisleburt",
     "license": "MIT",
 	"minimum-stability": "dev",
     "authors": [
