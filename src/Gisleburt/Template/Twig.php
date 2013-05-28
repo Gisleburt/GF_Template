@@ -56,7 +56,8 @@
 		 * @return $this
 		 */
 		public function initialise(array $config) {
-			require_once $config['twigDir'].'/Autoloader.php';
+			if($config['twigDir'])
+                require_once $config['twigDir'].'/Autoloader.php';
 			\Twig_Autoloader::register();
 
 			$loader = new \Twig_Loader_Filesystem($config['templateDirs']);
